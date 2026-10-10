@@ -80,6 +80,35 @@ html[dir="ltr"] .search i{right:auto;left:14px}
 .foot{text-align:center;font-size:12px;color:var(--gray);padding:22px 0 8px}
 .leaflet-popup-content{font-family:var(--font);font-size:13px}
 .leaflet-popup-content a{color:#C4151C;font-weight:800}
+
+ 
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--soft);border:1px solid var(--line);border-radius:13px;padding:4px;gap:4px;margin-bottom:10px}
+.seg button{border:none;background:none;padding:9px;border-radius:10px;font-size:14px;font-weight:800;color:var(--ink2);display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 2px 8px rgba(20,30,50,.14)}
+.groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;align-items:start}
+.g{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 6px 22px -14px rgba(20,30,50,.35)}
+.gh{display:flex;gap:12px;align-items:center;padding:14px 14px 12px}
+.av{width:48px;height:48px;border-radius:50%;color:#fff;display:grid;place-items:center;font-weight:800;font-size:16px;flex-shrink:0;position:relative;box-shadow:0 0 0 2px var(--card),0 0 0 3px var(--line)}
+.av i{position:absolute;bottom:-3px;inset-inline-start:-3px;background:var(--red);color:#fff;font-style:normal;font-size:10.5px;font-weight:800;border:2px solid var(--card);border-radius:10px;padding:0 5px;line-height:16px}
+.gn{min-width:0;flex:1}.gn b{display:block;font-size:16.5px;font-weight:800;line-height:1.3}.gn small{display:block;font-size:12.5px;color:var(--ink2);margin-top:1px}
+.ga{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:0 14px 12px}
+.ga.three{grid-template-columns:1fr 1fr 1.3fr}
+.sl{border-top:1px solid var(--line)}
+.st{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.st:last-child{border-bottom:none}
+.st.op{background:var(--soft)}
+.pin{width:32px;height:32px;border-radius:9px;background:rgba(196,21,28,.1);color:var(--red);display:grid;place-items:center;font-size:15px;flex-shrink:0}
+.sn{flex:1;min-width:0}.sn b{display:block;font-size:14.5px;font-weight:800;line-height:1.35}
+.sn small{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--ink2);margin-top:2px}
+.tg{font-size:10.5px;font-weight:800;color:var(--amber-t);background:var(--amber);border:1px solid var(--amber-b);border-radius:6px;padding:0 6px}
+.dk{font-size:11.5px;font-weight:800;color:var(--ink2);background:var(--soft);border-radius:7px;padding:3px 7px;white-space:nowrap}
+.go{flex-shrink:0;background:var(--red);color:#fff;border-radius:10px;font-size:12.5px;font-weight:800;padding:8px 11px;text-decoration:none;display:flex;align-items:center;gap:5px}
+.go.off{background:var(--soft);color:var(--gray);pointer-events:none}
+.sx{display:none;padding:0 14px 12px;flex-direction:column;gap:8px;background:var(--soft)}
+.st.op+.sx{display:flex}
+.sx .copy{align-self:flex-start}
+.gx{padding:0 14px 12px;display:flex;flex-direction:column;gap:8px}
+.oh{grid-column:1/-1;font-size:12.5px;font-weight:800;color:var(--ink2);margin:6px 2px 0;display:flex;align-items:center;gap:6px}
 </style>
 </head>
 <body>
@@ -93,6 +122,10 @@ html[dir="ltr"] .search i{right:auto;left:14px}
 </header>
 
 <main class="wrap">
+  <div class="seg" id="seg" style="display:none">
+    <button data-m="people" onclick="setMode('people')"><i class="bi bi-people-fill"></i><span data-t="byPerson">حسب المسؤول</span></button>
+    <button data-m="sites" onclick="setMode('sites')"><i class="bi bi-geo-alt-fill"></i><span data-t="allSites">كل المواقع</span></button>
+  </div>
   <div class="tools">
     <div class="search"><i class="bi bi-search"></i><input id="q" type="search" data-tp="search" placeholder="ابحث باسم الموقع أو المسؤول" oninput="render()"></div>
     <button class="near" id="nearBtn" onclick="nearMe()"><i class="bi bi-crosshair"></i><span data-t="near">الأقرب لي</span></button>
@@ -121,7 +154,10 @@ var T = {
         none:'لا توجد نتائج', invalid:'هذا الرابط غير صالح أو تم تغييره. اطلب الرابط الجديد من إدارة المشتريات.',
         failed:'تعذّر التحميل. تحقق من الاتصال وحاول مرة أخرى.', copied:'تم نسخ الموقع', copy:'نسخ الموقع',
         geoFail:'تعذّر تحديد موقعك — فعّل خدمة الموقع وحاول مرة أخرى', updated:'تحديث', lang:'English',
-        waMsg:function(s){return 'مرحبًا، أنا مورد متجه إلى '+s+'.';} },
+        waMsg:function(s){return 'مرحبًا، أنا مورد متجه إلى '+s+'.';},
+        byPerson:'حسب المسؤول', allSites:'كل المواقع', others:'مواقع أخرى', info:'تعليمات', tapInfo:'اضغط للتفاصيل',
+        countP:function(p,s){return p+(p===1?' مسؤول':' مسؤولين')+' · '+s+(s===1?' موقع':' مواقع');},
+        waMsgG:function(){return 'مرحبًا، أنا مورد لشركة القاهرة 3A للدواجن.';} },
   en: { title:'Sites Directory', sub:'Location, contacts and receiving instructions for every site', search:'Search by site or contact',
         near:'Nearest to me', all:'All', hideMap:'Hide map', showMap:'Show map', loading:'Loading…',
         nav:'Directions', call:'Call', wa:'WhatsApp', rcv:'Receiving & unloading', note:'Notes',
@@ -129,10 +165,15 @@ var T = {
         none:'No results', invalid:'This link is invalid or has been changed. Ask the purchasing team for the new link.',
         failed:'Could not load. Check your connection and try again.', copied:'Location copied', copy:'Copy location',
         geoFail:'Could not get your location — enable location services and try again', updated:'Updated', lang:'العربية',
-        waMsg:function(s){return 'Hello, I am a supplier heading to '+s+'.';} }
+        waMsg:function(s){return 'Hello, I am a supplier heading to '+s+'.';},
+        byPerson:'By contact', allSites:'All sites', others:'Other sites', info:'Instructions', tapInfo:'Tap for details',
+        countP:function(p,s){return p+(p===1?' contact':' contacts')+' · '+s+(s===1?' site':' sites');},
+        waMsgG:function(){return 'Hello, I am a supplier for Cairo 3A Poultry.';} }
 };
 var LANG = (function(){ try { return localStorage.getItem('SD_LANG') || 'ar'; } catch(e){ return 'ar'; } })();
-var DATA = [], CO = '', ME = null, MAP = null, LAYER = null, MAP_ON = true;
+var DATA = [], CONTACTS = [], CO = '', ME = null, MAP = null, LAYER = null, MAP_ON = true;
+var MODE = (function(){ try { return localStorage.getItem('SD_MODE') || 'people'; } catch(e){ return 'people'; } })();
+var AV = ['#1B2A47','#3D5A8C','#6B84B0','#7C3A2E','#2F6B5E','#5B4B8A'];
 function t(k){ return T[LANG][k]; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
 function toast(m){ var e=document.getElementById('toast'); e.textContent=m; e.classList.add('show'); clearTimeout(e._t); e._t=setTimeout(function(){e.classList.remove('show');},2600); }
@@ -165,7 +206,7 @@ function load(){
 }
 function got(res){
   if(!res||!res.ok){ fail('invalid'); return; }
-  DATA=res.rows||[];
+  DATA=res.rows||[]; CONTACTS=res.contacts||[]; groupKeys();
   if(res.brand&&res.brand.logo) document.getElementById('brand').innerHTML='<img src="'+res.brand.logo+'" alt="Cairo 3A">';
   document.getElementById('foot').textContent='Cairo 3A Poultry';
   renderChips(); render(); initMap();
@@ -188,7 +229,8 @@ function setCo(c){ CO=c; renderChips(); render(); }
 function view(){
   var q=document.getElementById('q').value.trim().toLowerCase();
   var rows=DATA.filter(function(r){
-    return !q||((r.name||'')+' '+(r.adminName||'')).toLowerCase().indexOf(q)>=0;
+    var g=grp(r);
+    return !q||((r.name||'')+' '+(g?g.name+' '+g.title:'')).toLowerCase().indexOf(q)>=0;    
   });
   if(ME) rows=rows.map(function(r){ r._d=hasLoc(r)?dist(ME.lat,ME.lng,r.lat,r.lng):Infinity; return r; })
                   .sort(function(a,b){ return a._d-b._d; });
@@ -196,9 +238,18 @@ function view(){
 }
 function render(){
   var rows=view(), L=document.getElementById('list');
+  window._ROWS=rows;
+  document.querySelectorAll('#seg button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-m')===MODE); });
+  if(!rows.length){ document.getElementById('count').textContent=t('count')(0);
+    L.className='list'; L.innerHTML='<div class="state" style="grid-column:1/-1"><i class="bi bi-search"></i>'+t('none')+'</div>'; drawMarkers(rows); return; }
+  if(MODE==='people'&&HAS_GROUPS){ renderPeople(rows); drawMarkers(rows); return; }
   document.getElementById('count').textContent=t('count')(rows.length);
-  if(!rows.length){ L.innerHTML='<div class="state" style="grid-column:1/-1"><i class="bi bi-search"></i>'+t('none')+'</div>'; drawMarkers(rows); return; }
-  L.innerHTML=rows.map(function(r,i){
+  L.className='list';
+  L.innerHTML=rows.map(siteCard).join('');
+  drawMarkers(rows);
+}
+function siteCard(r,i){
+  {
     var loc=hasLoc(r), dest=loc?(r.lat+','+r.lng):'';
     var navUrl=loc?'https://www.google.com/maps/dir/?api=1&destination='+dest:(r.mapUrl||'');
     var ph=String(r.adminPhone||'').replace(/[^\d+]/g,''), wa=waNum(r.adminPhone);
@@ -220,8 +271,77 @@ function render(){
       +(loc?'<button class="copy" onclick="copyLoc('+i+')"><i class="bi bi-clipboard"></i>'+t('copy')+'</button>'
            :'<span class="nolo"><i class="bi bi-geo"></i>'+t('noLoc')+'</span>')
       +'</div></article>';
+  }
+}
+
+
+var GROUPS = {}, HAS_GROUPS = false;
+function digits(p){ return waNum(p); }
+function groupKeys(){
+  GROUPS = {};
+  DATA.forEach(function(r){
+    var k='', g=null;
+    if (r.c!=null && r.c>=0 && CONTACTS[r.c]) { k='c'+r.c; g=CONTACTS[r.c]; }
+    else if (digits(r.adminPhone)) { k='p'+digits(r.adminPhone); g={name:r.adminName||r.adminPhone,title:'',phone:r.adminPhone}; }
+    r._g=k;
+    if (k && !GROUPS[k]) GROUPS[k]={ key:k, name:g.name||'', title:g.title||'', phone:g.phone||'' };
+  });
+  HAS_GROUPS = Object.keys(GROUPS).length>0;
+  document.getElementById('seg').style.display = HAS_GROUPS ? 'grid' : 'none';
+}
+function grp(r){ return r._g ? GROUPS[r._g] : null; }
+function setMode(m){ MODE=m; try{localStorage.setItem('SD_MODE',m);}catch(e){} render(); }
+function initials(n){ var w=String(n||'').replace(/^(أ\.|م\.|د\.|ا\.)\s*/,'').trim().split(/\s+/); return (w[0]||'').charAt(0)+(w[1]?w[1].charAt(0):''); }
+function km(d){ return (d<10?d.toFixed(1):Math.round(d))+t('km'); }
+function navOf(r){ return hasLoc(r)?'https://www.google.com/maps/dir/?api=1&destination='+r.lat+','+r.lng:(r.mapUrl||''); }
+function contactBtns(g, label){
+  var ph=String(g.phone||'').replace(/[^\d+]/g,''), wa=waNum(g.phone);
+  return (ph?'<a class="act call" href="tel:'+esc(ph)+'"><i class="bi bi-telephone-fill"></i>'+t('call')+'</a>':'<span class="act off"><i class="bi bi-telephone"></i>'+t('call')+'</span>')
+    +(wa?'<a class="act wa" href="https://wa.me/'+wa+'?text='+encodeURIComponent(label)+'" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i>'+t('wa')+'</a>'
+        :'<span class="act off"><i class="bi bi-whatsapp"></i>'+t('wa')+'</span>');
+}
+function details(r,i){
+  return (r.receiving?'<div class="box rcv"><b><i class="bi bi-truck"></i> '+t('rcv')+'</b>'+esc(r.receiving)+'</div>':'')
+    +(r.notes?'<div class="box note"><b><i class="bi bi-info-circle"></i> '+t('note')+'</b>'+esc(r.notes)+'</div>':'')
+    +(hasLoc(r)?'<button class="copy" onclick="event.stopPropagation();copyLoc('+i+')"><i class="bi bi-clipboard"></i>'+t('copy')+'</button>'
+               :'<span class="nolo"><i class="bi bi-geo"></i>'+t('noLoc')+'</span>');
+}
+function renderPeople(rows){
+  var L=document.getElementById('list'), map={}, order=[], loose=[];
+  rows.forEach(function(r,i){
+    if(!r._g){ loose.push(i); return; }
+    if(!map[r._g]){ map[r._g]={g:GROUPS[r._g],ix:[],d:Infinity}; order.push(r._g); }
+    map[r._g].ix.push(i); if(ME&&isFinite(r._d)) map[r._g].d=Math.min(map[r._g].d,r._d);
+  });
+   
+  order.sort(function(a,b){ var A=map[a],B=map[b];
+    return ME ? A.d-B.d : (B.ix.length-A.ix.length) || A.g.name.localeCompare(B.g.name); });
+  document.getElementById('count').textContent=t('countP')(order.length, rows.length);
+  var colorOf={}; Object.keys(GROUPS).sort().forEach(function(k,n){ colorOf[k]=AV[n%AV.length]; });
+  var html=order.map(function(k){
+    var G=map[k], g=G.g, n=G.ix.length, av='<div class="av" style="background:'+colorOf[k]+'">'+esc(initials(g.name))+(n>1?'<i>'+n+'</i>':'')+'</div>';
+    if(n===1){                                           
+      var i=G.ix[0], r=rows[i], nav=navOf(r), hasX=r.receiving||r.notes;
+      return '<article class="g"><div class="gh">'+av+'<div class="gn"><b>'+esc(g.name)+'</b><small>'
+        +esc(r.name)+(g.title?' · '+esc(g.title):'')+'</small></div>'+(ME&&isFinite(r._d)?'<span class="dk">'+km(r._d)+'</span>':'')+'</div>'
+        +'<div class="ga three">'+contactBtns(g,t('waMsg')(r.name))
+        +(nav?'<a class="act nav" href="'+esc(nav)+'" target="_blank" rel="noopener"><i class="bi bi-sign-turn-right-fill"></i>'+t('nav')+'</a>':'<span class="act off">'+t('nav')+'</span>')+'</div>'
+        +(hasX||hasLoc(r)?'<div class="gx">'+details(r,i)+'</div>':'')+'</article>';
+    }
+    return '<article class="g"><div class="gh">'+av+'<div class="gn"><b>'+esc(g.name)+'</b>'+(g.title?'<small>'+esc(g.title)+'</small>':'')+'</div></div>'
+      +'<div class="ga">'+contactBtns(g,t('waMsgG')())+'</div>'
+      +'<div class="sl">'+G.ix.map(function(i){
+        var r=rows[i], nav=navOf(r), hasX=r.receiving||r.notes;
+        return '<div class="st" onclick="this.classList.toggle(\'op\')"><div class="pin"><i class="bi bi-geo-alt-fill"></i></div>'
+          +'<div class="sn"><b>'+esc(r.name)+'</b><small>'+(hasX?'<span class="tg">'+t('info')+'</span> ':'')+t('tapInfo')+'</small></div>'
+          +(ME&&isFinite(r._d)?'<span class="dk">'+km(r._d)+'</span>':'')
+          +(nav?'<a class="go" href="'+esc(nav)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="bi bi-sign-turn-right-fill"></i>'+t('nav')+'</a>'
+               :'<span class="go off">'+t('nav')+'</span>')+'</div>'
+          +'<div class="sx">'+details(r,i)+'</div>';
+      }).join('')+'</div></article>';
   }).join('');
-  window._ROWS=rows; drawMarkers(rows);
+  if(loose.length) html+='<div class="oh"><i class="bi bi-geo"></i>'+t('others')+'</div>'+loose.map(function(i){ return siteCard(rows[i],i); }).join('');
+  L.className='groups'; L.innerHTML=html;
 }
 function copyLoc(i){
   var r=window._ROWS[i], s='https://www.google.com/maps?q='+r.lat+','+r.lng;
@@ -243,7 +363,8 @@ function drawMarkers(rows){
   LAYER.clearLayers(); var pts=[];
   rows.filter(hasLoc).forEach(function(r){
     var m=L.circleMarker([r.lat,r.lng],{radius:9,color:'#fff',weight:2,fillColor:'#C4151C',fillOpacity:1}).addTo(LAYER);
-    m.bindPopup('<b>'+esc(r.name)+'</b><br><a href="https://www.google.com/maps/dir/?api=1&destination='+r.lat+','+r.lng+'" target="_blank">'+t('nav')+' ›</a>');
+    var g=grp(r);
+    m.bindPopup('<b>'+esc(r.name)+'</b>'+(g?'<br><small>'+esc(g.name)+'</small>':'')+'<br><a href="https://www.google.com/maps/dir/?api=1&destination='+r.lat+','+r.lng+'" target="_blank">'+t('nav')+' ›</a>');
     pts.push([r.lat,r.lng]);
   });
   if(ME){ L.circleMarker([ME.lat,ME.lng],{radius:8,color:'#fff',weight:2,fillColor:'#2563EB',fillOpacity:1}).addTo(LAYER); pts.push([ME.lat,ME.lng]); }
