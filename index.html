@@ -111,7 +111,7 @@ html[dir="ltr"] .search i{right:auto;left:14px}
 /* المفتاح: من القالب (عند الخدمة عبر Apps Script) أو من الرابط (عند الاستضافة الخارجية) */
 var KEY = '<?= key ?>';
 if (!/^[A-Za-z0-9]+$/.test(KEY)) KEY = new URLSearchParams(location.search).get('k') || new URLSearchParams(location.search).get('sectors') || '';
-var GAS_URL = '';   /* عند استضافة الصفحة خارج Apps Script: ضع رابط الـ Web App هنا */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbz_a2TbOIgZ3sZvCg94d0zIk0Byhx8gp8gsScfrytWJwkKPGQL0yz2RX546ja9cOk4OgQ/exec';   /* عند استضافة الصفحة خارج Apps Script: ضع رابط الـ Web App هنا */
 
 var T = {
   ar: { title:'دليل مواقع القطاعات', sub:'الموقع، والتواصل، وتعليمات الاستلام لكل قطاع', search:'ابحث باسم الموقع أو المسؤول',
