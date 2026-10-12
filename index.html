@@ -129,6 +129,14 @@ html[dir="ltr"] .search i{right:auto;left:14px}
 .btn1{height:42px;border-radius:11px;font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:6px;border:none;background:var(--red);color:#fff}
 .btn1:disabled{background:var(--soft);color:var(--gray)}
 .btn1.ok:disabled{background:rgba(21,128,61,.12);color:var(--ok)}
+.hello{max-width:980px;margin:10px auto 0;display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700;color:#fff;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:8px 12px}
+.hello i{color:#ff8a8e;font-size:17px}
+.mine{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;margin:0 0 10px;box-shadow:0 4px 18px -12px rgba(20,30,50,.25)}
+.mine .mi{width:38px;height:38px;border-radius:11px;background:rgba(196,21,28,.1);color:var(--red);display:grid;place-items:center;font-size:18px;flex-shrink:0}
+.mine .mt{flex:1;min-width:0}.mine .mt b{display:block;font-size:14.5px;font-weight:800}.mine .mt small{font-size:12px;color:var(--ink2);font-weight:700}
+.mine button{border:1.5px solid var(--line);background:var(--soft);color:var(--ink);border-radius:10px;font-weight:800;font-size:12.5px;padding:8px 10px;white-space:nowrap}
+.mine button.on{background:var(--red);border-color:var(--red);color:#fff}
+.nbs{display:flex;flex-direction:column;gap:8px}
 .tg2{font-size:10.5px;font-weight:800;border-radius:6px;padding:0 6px;display:inline-flex;align-items:center;gap:3px}
 .tg2.none{background:rgba(196,21,28,.1);color:var(--red)}.tg2.partial{background:var(--amber);color:var(--amber-t)}.tg2.done{background:rgba(21,128,61,.12);color:var(--ok)}
 
@@ -211,9 +219,11 @@ details.sum .sum-h i{transition:.2s;font-size:12px}details.sum[open] .sum-h i{tr
   </div>
   <h1 data-t="title">دليل مواقع القطاعات</h1>
   <p data-t="sub">الموقع، والتواصل، وتعليمات الاستلام لكل قطاع</p>
+  <div class="hello" id="hello" hidden></div>
 </header>
 
 <main class="wrap">
+  <div class="mine" id="mine" hidden></div>
   <div class="seg" id="seg" style="display:none">
     <button data-m="people" onclick="setMode('people')"><i class="bi bi-people-fill"></i><span data-t="byPerson">حسب المسؤول</span></button>
     <button data-m="sites" onclick="setMode('sites')"><i class="bi bi-geo-alt-fill"></i><span data-t="allSites">كل المواقع</span></button>
@@ -240,6 +250,10 @@ details.sum .sum-h i{transition:.2s;font-size:12px}details.sum[open] .sum-h i{tr
  
 var KEY = '<?= key ?>';
 if (!/^[A-Za-z0-9]+$/.test(KEY)) KEY = new URLSearchParams(location.search).get('k') || new URLSearchParams(location.search).get('sectors') || '';
+ 
+var VTOK = '<?= vtok ?>';
+if (!/^[0-9a-fA-F]{32,64}$/.test(VTOK)) VTOK = (new URLSearchParams(location.search).get('v') || new URLSearchParams(location.search).get('sv') || '').replace(/[^0-9a-fA-F]/g,'');
+var VENDOR = null, ONLY = false;
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbz_a2TbOIgZ3sZvCg94d0zIk0Byhx8gp8gsScfrytWJwkKPGQL0yz2RX546ja9cOk4OgQ/exec';   /* أُضيف تلقائيًا من البرنامج */    
 
 var T = {
@@ -268,7 +282,10 @@ var T = {
         fixPill:'مطلوب صورة جديدة', fixBtn:'رفع صورة الإذن', fixT:'مطلوب صورة جديدة لإذن تسليم', fixWhy:'سبب الطلب: ',
         fixDo:'رفع صورة جديدة', fixSend:'إرسال الصورة الجديدة', fixOk:'تم رفع الصورة الجديدة', fixOkP:'شكرًا لك — تم استبدال صورة الإذن.',
         voidT:'تم إلغاء تسليم بواسطة الإدارة', voidWhy:'السبب: ', voidP:'الكميات رجعت للمتبقي — برجاء إعادة التسليم مع صورة إذن جديدة.',
-        full:'تكبير', docT:'إذن الاستلام كما يُطبع', of:'من' },
+        full:'تكبير', docT:'إذن الاستلام كما يُطبع', of:'من',
+        hello:function(n){return 'أهلًا '+n+' — دي مواقعنا وأذونات الاستلام الخاصة بطلباتك';},
+        mineT:function(n){return n===1?'عندك إذن استلام واحد':'عندك '+n+' أذونات استلام';}, mineS:function(w){return w?w+' لسه محتاج تسليم':'كله اتسلّم — شكرًا لك';},
+        mineNone:'مفيش أذونات استلام مفتوحة باسمك حاليًا', onlyMine:'مواقع طلباتي', allBtn:'كل المواقع', orders:function(n){return n+' طلبات';} },
   en: { title:'Sites Directory', sub:'Location, contacts and receiving instructions for every site', search:'Search by site or contact',
         near:'Nearest to me', all:'All', hideMap:'Hide map', showMap:'Show map', loading:'Loading…',
         nav:'Directions', call:'Call', wa:'WhatsApp', rcv:'Receiving & unloading', note:'Notes',
@@ -294,7 +311,10 @@ var T = {
         fixPill:'New photo needed', fixBtn:'Upload note photo', fixT:'A new photo is needed for the delivery of', fixWhy:'Reason: ',
         fixDo:'Upload a new photo', fixSend:'Send the new photo', fixOk:'New photo uploaded', fixOkP:'Thank you — the note photo has been replaced.',
         voidT:'A delivery was cancelled by the site team', voidWhy:'Reason: ', voidP:'Its quantities are back to remaining — please deliver again with a new signed-note photo.',
-        full:'Full size', docT:'Receiving note as printed', of:'of' }
+        full:'Full size', docT:'Receiving note as printed', of:'of',
+        hello:function(n){return 'Welcome '+n+' — our sites and the receiving notes for your orders';},
+        mineT:function(n){return n===1?'You have 1 receiving note':'You have '+n+' receiving notes';}, mineS:function(w){return w?w+' still to deliver':'All delivered — thank you';},
+        mineNone:'No open receiving notes under your name right now', onlyMine:'My order sites', allBtn:'All sites', orders:function(n){return n+' orders';} }
 };
 var LANG = (function(){ try { return localStorage.getItem('SD_LANG') || 'ar'; } catch(e){ return 'ar'; } })();
 var DATA = [], CONTACTS = [], CO = '', ME = null, MAP = null, LAYER = null, MAP_ON = true;
@@ -311,7 +331,7 @@ function applyLang(){
   document.getElementById('langBtn').textContent=t('lang');
   document.querySelector('#mapToggle span').textContent=MAP_ON?t('hideMap'):t('showMap');
 }
-function toggleLang(){ LANG=LANG==='ar'?'en':'ar'; try{localStorage.setItem('SD_LANG',LANG);}catch(e){} applyLang(); renderChips(); render(); }
+function toggleLang(){ LANG=LANG==='ar'?'en':'ar'; try{localStorage.setItem('SD_LANG',LANG);}catch(e){} applyLang(); renderChips(); renderMine(); render(); }
 
  
 function waNum(p){ var d=String(p||'').replace(/[^\d]/g,''); if(d.indexOf('00')===0)d=d.slice(2);
@@ -321,18 +341,24 @@ function dist(a,b,c,d){ var R=6371,x=(c-a)*Math.PI/180,y=(d-b)*Math.PI/180;
   return R*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h)); }
 function hasLoc(r){ return r.lat!==null&&r.lng!==null&&isFinite(r.lat)&&isFinite(r.lng); }
 
-function load(){
-  if(!KEY){ fail('invalid'); return; }
+function fetchList(ok, bad){
   if(window.google&&google.script&&google.script.run){
-    google.script.run.withSuccessHandler(got).withFailureHandler(function(){fail('failed');}).sd_public(KEY);
+    var r=google.script.run.withSuccessHandler(ok).withFailureHandler(bad||function(){});
+    if(VTOK) r.sd_vendor(VTOK); else r.sd_public(KEY);
   } else if(GAS_URL){
-    fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'sectorDirectory',payload:{key:KEY}})})
-      .then(function(r){return r.json();}).then(got).catch(function(){fail('failed');});
-  } else fail('failed');
+    fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(VTOK?{action:'sectorVendor',payload:{v:VTOK}}:{action:'sectorDirectory',payload:{key:KEY}})})
+      .then(function(r){return r.json();}).then(ok).catch(bad||function(){});
+  } else if(bad) bad();
+}
+function load(){
+  if(!KEY&&!VTOK){ fail('invalid'); return; }
+  fetchList(got, function(){ fail('failed'); });
 }
 function got(res){
   if(!res||!res.ok){ fail('invalid'); return; }
   DATA=res.rows||[]; CONTACTS=res.contacts||[]; groupKeys();
+  VENDOR=res.vendor||null; renderMine();
   if(res.brand&&res.brand.logo) document.getElementById('brand').innerHTML='<img src="'+res.brand.logo+'" alt="Cairo 3A">';
   document.getElementById('foot').textContent='Cairo 3A Poultry';
   renderChips(); render(); if(!MAP) initMap(); else drawMarkers(view());
@@ -356,6 +382,7 @@ function view(){
   var q=document.getElementById('q').value.trim().toLowerCase();
   var rows=DATA.filter(function(r){
     var g=grp(r);
+    if(ONLY&&!(r.pos&&r.pos.length)) return false;
     return !q||((r.name||'')+' '+(g?g.name+' '+g.title:'')).toLowerCase().indexOf(q)>=0;    
   });
   if(ME) rows=rows.map(function(r){ r._d=hasLoc(r)?dist(ME.lat,ME.lng,r.lat,r.lng):Infinity; return r; })
@@ -448,7 +475,7 @@ function renderPeople(rows){
   var html=order.map(function(k){
     var G=map[k], g=G.g, n=G.ix.length, av='<div class="av" style="background:'+colorOf[k]+'">'+esc(initials(g.name))+(n>1?'<i>'+n+'</i>':'')+'</div>';
     if(n===1){                                           
-      var i=G.ix[0], r=rows[i], nav=navOf(r), hasX=r.receiving||r.notes||r.note;
+      var i=G.ix[0], r=rows[i], nav=navOf(r), hasX=r.receiving||r.notes||(r.pos&&r.pos.length);
       return '<article class="g"><div class="gh">'+av+'<div class="gn"><b>'+esc(g.name)+'</b><small>'
         +esc(r.name)+(g.title?' · '+esc(g.title):'')+'</small></div>'+(ME&&isFinite(r._d)?'<span class="dk">'+km(r._d)+'</span>':'')+'</div>'
         +'<div class="ga three">'+contactBtns(g,t('waMsg')(r.name))
@@ -459,8 +486,9 @@ function renderPeople(rows){
       +'<div class="ga">'+contactBtns(g,t('waMsgG')())+'</div>'
       +'<div class="sl">'+G.ix.map(function(i){
         var r=rows[i], nav=navOf(r), hasX=r.receiving||r.notes;
-        return '<div class="st'+(r.note&&(r.note.state!=='done'||r.note.fix)?' op':'')+'" onclick="this.classList.toggle(\'op\')"><div class="pin"><i class="bi bi-geo-alt-fill"></i></div>'
-          +'<div class="sn"><b>'+esc(r.name)+'</b><small>'+(r.note?'<span class="tg2 '+(r.note.fix?'none':r.note.state)+'"><i class="bi bi-'+(r.note.fix?'camera':'file-earmark-text')+'"></i>'+poL(r.note.po)+'</span> ':'')
+        var P=r.pos||[], open=P.some(function(p){ return p.state!=='done'||p.fix; }), fx=P.some(function(p){ return p.fix; });
+        return '<div class="st'+(open?' op':'')+'" onclick="this.classList.toggle(\'op\')"><div class="pin"><i class="bi bi-geo-alt-fill"></i></div>'
+          +'<div class="sn"><b>'+esc(r.name)+'</b><small>'+(P.length?'<span class="tg2 '+(fx?'none':open?(P.some(function(p){return p.state==='partial';})?'partial':'none'):'done')+'"><i class="bi bi-'+(fx?'camera':'file-earmark-text')+'"></i>'+(P.length>1?esc(t('orders')(P.length)):poL(P[0].po))+'</span> ':'')
           +(hasX?'<span class="tg">'+t('info')+'</span> ':'')+t('tapInfo')+'</small></div>'
           +(ME&&isFinite(r._d)?'<span class="dk">'+km(r._d)+'</span>':'')
           +(nav?'<a class="go" href="'+esc(nav)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="bi bi-sign-turn-right-fill"></i>'+t('nav')+'</a>'
@@ -516,12 +544,12 @@ function api(action, payload){
   return new Promise(function(res, rej){
     if(window.google&&google.script&&google.script.run){
       var r=google.script.run.withSuccessHandler(res).withFailureHandler(rej);
-      if(action==='sectorNote') r.sd_note(KEY, payload.sid);
-      else if(action==='sectorReupload') r.sd_reupload(KEY, payload);
-      else r.sd_deliver(KEY, payload);
+      if(action==='sectorNote') r.sd_note(VTOK, payload.ref);
+      else if(action==='sectorReupload') r.sd_reupload(VTOK, payload);
+      else r.sd_deliver(VTOK, payload);
     } else if(GAS_URL){
       fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body:JSON.stringify({action:action,payload:Object.assign({key:KEY},payload)})})
+        body:JSON.stringify({action:action,payload:Object.assign({v:VTOK},payload)})})
         .then(function(r){return r.json();}).then(res).catch(rej);
     } else rej(new Error('offline'));
   });
@@ -532,16 +560,19 @@ function fmtQ(n){ n=Number(n)||0; return (Math.round(n*1000)/1000).toLocaleStrin
 function stPill(st,pct){ if(!T[LANG]['st_'+st]) st='none'; var ic=st==='done'?'check-circle-fill':st==='partial'?'hourglass-split':'clock';
   return '<span class="pill '+st+'"><i class="bi bi-'+ic+'"></i>'+t('st_'+st)+(st==='partial'?' · '+pct+'%':'')+'</span>'; }
 function noteBar(r,i){
-  var n=r.note; if(!n) return '';
+  var P=r.pos||[]; if(!P.length) return '';
+  return '<div class="nbs">'+P.map(function(n,j){ return noteOne(n,i,j); }).join('')+'</div>';
+}
+function noteOne(n,i,j){
   var done=n.state==='done', fix=n.fix>0;
   return '<div class="nb" onclick="event.stopPropagation()"><div class="nb-h"><div class="nb-ic"><i class="bi bi-file-earmark-text"></i></div>'
     +'<div class="nb-t"><b>'+t('nt')+'</b><small>'+poL(n.po)+'</small></div>'
     +(fix?'<span class="pill fix"><i class="bi bi-camera"></i>'+t('fixPill')+'</span>':stPill(n.state,n.pct))+'</div>'
     +(n.state==='partial'?'<div class="bar"><i style="width:'+n.pct+'%"></i></div>':'')
-    +'<div class="nb-a"><button class="btn2" onclick="openNote('+i+')"><i class="bi bi-eye"></i>'+t('view')+'</button>'
-    +(fix?'<button class="btn1" onclick="openNote('+i+')"><i class="bi bi-camera"></i>'+t('fixBtn')+'</button>'
+    +'<div class="nb-a"><button class="btn2" onclick="openNote('+i+','+j+')"><i class="bi bi-eye"></i>'+t('view')+'</button>'
+    +(fix?'<button class="btn1" onclick="openNote('+i+','+j+')"><i class="bi bi-camera"></i>'+t('fixBtn')+'</button>'
      :done?'<button class="btn1 ok" disabled><i class="bi bi-check2-circle"></i>'+t('deliveredAll')+'</button>'
-          :'<button class="btn1" onclick="openDeliver('+i+')"><i class="bi bi-truck"></i>'+t('deliver')+'</button>')+'</div></div>';
+          :'<button class="btn1" onclick="openDeliver('+i+','+j+')"><i class="bi bi-truck"></i>'+t('deliver')+'</button>')+'</div></div>';
 }
 
  
@@ -560,21 +591,22 @@ function closeOv(fromPop){
 }
 window.addEventListener('popstate',function(){ closeOv(true); });
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeOv(); });
-function ovWait(r){ ov(r.name, esc(t('nt'))+' '+poL(r.note.po), '<div class="state"><div class="spin"></div>'+t('loading')+'</div>'); }
+function ovWait(r,n){ ov(r.name, esc(t('nt'))+' '+poL(n.po), '<div class="state"><div class="spin"></div>'+t('loading')+'</div>'); }
 function ovErr(r, msg){ ov(r.name, esc(t('nt')), '<div class="state"><i class="bi bi-exclamation-triangle"></i>'+esc(msg)+'</div>',
   '<button class="btn2" onclick="closeOv()">'+t('close')+'</button>'); }
 
-function fetchNote(r){
-  return api('sectorNote',{sid:r.note.sid}).then(function(res){
+function fetchNote(r,n){
+  return api('sectorNote',{ref:n.ref}).then(function(res){
     if(!res||!res.ok){ ovErr(r, srvMsg(res)); if(res&&res.code==='gone') refresh(); return null; }
-    NOTE={sid:r.note.sid, site:res.site||r.name, po:res.po, html:res.html, lines:res.lines||[], state:res.state, pct:res.pct, history:res.history||[],
+    NOTE={ref:n.ref, site:res.site||r.name, po:res.po, html:res.html, lines:res.lines||[], state:res.state, pct:res.pct, history:res.history||[],
           fix:res.fix||[], voided:res.voided||[]};
-    if(String(res.po)!==String(r.note.po)) refresh();
+    if(String(res.po)!==String(n.po)) refresh();
     return NOTE;
   }, function(){ ovErr(r, t('failed')); return null; });
 }
-function openNote(i){ var r=window._ROWS[i]; if(!r||!r.note) return; ovWait(r); fetchNote(r).then(function(n){ if(n) showNote(); }); }
-function openDeliver(i){ var r=window._ROWS[i]; if(!r||!r.note) return; ovWait(r); fetchNote(r).then(function(n){ if(n) showForm(); }); }
+function noteOf(i,j){ var r=window._ROWS[i]; return r&&r.pos&&r.pos[j||0] ? {r:r,n:r.pos[j||0]} : null; }
+function openNote(i,j){ var x=noteOf(i,j); if(!x) return; ovWait(x.r,x.n); fetchNote(x.r,x.n).then(function(n){ if(n) showNote(); }); }
+function openDeliver(i,j){ var x=noteOf(i,j); if(!x) return; ovWait(x.r,x.n); fetchNote(x.r,x.n).then(function(n){ if(n) showForm(); }); }
 
 function sumTable(lines){
   return '<table><thead><tr><th>'+t('item')+'</th><th class="n">'+t('ordered')+'</th><th class="n">'+t('got')+'</th><th class="n">'+t('rem')+'</th></tr></thead><tbody>'
@@ -731,7 +763,7 @@ function sendDelivery(){
   if(FORM.busy) return; FORM.busy=true;
   var b=document.getElementById('sendBtn'); b.disabled=true; b.innerHTML='<span class="spin" style="width:18px;height:18px;margin:0;border-width:2px"></span> '+t('sending');
   try{ localStorage.setItem('SD_DRIVER',JSON.stringify({n:String(FORM.driver).trim(),p:nDig(FORM.phone)})); }catch(e){}
-  api('sectorDeliver',{sid:NOTE.sid, po:NOTE.po, sub:FORM.sub, driver:String(FORM.driver).trim(), phone:nDig(FORM.phone),
+  api('sectorDeliver',{ref:NOTE.ref, po:NOTE.po, sub:FORM.sub, driver:String(FORM.driver).trim(), phone:nDig(FORM.phone),
        items:FORM.items.map(function(x){return {k:x.k,qty:x.qty};}), photo:{data:FORM.photo}})
     .then(function(res){
       FORM.busy=false;
@@ -788,7 +820,7 @@ function sendFix(){
   if(!FORM.photo){ var p=document.getElementById('phPick'); if(p) p.classList.add('bad'); fErr(t('errPhoto')); return; }
   FORM.busy=true; var b=document.getElementById('sendBtn'); b.disabled=true;
   b.innerHTML='<span class="spin" style="width:18px;height:18px;margin:0;border-width:2px"></span> '+t('sending');
-  api('sectorReupload',{sid:NOTE.sid, id:FORM.fixId, photo:{data:FORM.photo}}).then(function(res){
+  api('sectorReupload',{ref:NOTE.ref, id:FORM.fixId, photo:{data:FORM.photo}}).then(function(res){
     FORM.busy=false;
     if(res&&res.ok){
       NOTE.fix=NOTE.fix.filter(function(x){ return x.id!==FORM.fixId; }); FORM=null;
@@ -804,11 +836,21 @@ function sendFix(){
 }
 
  
-function refresh(){
-  if(window.google&&google.script&&google.script.run) google.script.run.withSuccessHandler(function(r){ if(r&&r.ok) got(r); }).sd_public(KEY);
-  else if(GAS_URL) fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'sectorDirectory',payload:{key:KEY}})})
-    .then(function(r){return r.json();}).then(function(r){ if(r&&r.ok) got(r); }).catch(function(){});
+function refresh(){ fetchList(function(r){ if(r&&r.ok) got(r); }); }
+
+ 
+function renderMine(){
+  var h=document.getElementById('hello'), m=document.getElementById('mine');
+  if(!VENDOR){ h.hidden=true; m.hidden=true; return; }
+  h.hidden=false; h.innerHTML='<i class="bi bi-person-check-fill"></i><span>'+esc(t('hello')(VENDOR.name))+'</span>';
+  var all=[]; DATA.forEach(function(r){ (r.pos||[]).forEach(function(p){ all.push(p); }); });
+  var waiting=all.filter(function(p){ return p.state!=='done'||p.fix; }).length;
+  m.hidden=false;
+  if(!all.length){ ONLY=false; m.innerHTML='<div class="mi"><i class="bi bi-inbox"></i></div><div class="mt"><b>'+t('mineNone')+'</b></div>'; return; }
+  m.innerHTML='<div class="mi"><i class="bi bi-file-earmark-text-fill"></i></div><div class="mt"><b>'+t('mineT')(all.length)+'</b><small>'+t('mineS')(waiting)+'</small></div>'
+    +'<button class="'+(ONLY?'on':'')+'" onclick="toggleOnly()"><i class="bi bi-funnel'+(ONLY?'-fill':'')+'"></i> '+(ONLY?t('allBtn'):t('onlyMine'))+'</button>';
 }
+function toggleOnly(){ ONLY=!ONLY; renderMine(); render(); }
 
 applyLang(); load();
 </script>
